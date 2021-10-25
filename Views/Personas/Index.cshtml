@@ -1,0 +1,88 @@
+﻿@using System.Web.UI.WebControls.Expressions
+@model IEnumerable<RegistroPersonas.Persona>
+
+@{
+    ViewBag.Title = "Lista";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Indice</h2>
+
+<p>
+    @Html.ActionLink("Crear Nuevo", "Create", null, new { @class = "btn btn-primary" })
+</p>
+<p>
+
+    @using (Html.BeginForm("Index", "Personas"))
+    {
+        <div>
+            <text>Buscar:</text><input type="text" name="search" placeholder="buscar"/> <label>Categoria</label><select name="category">
+                <option value="nombre">Nombre</option>
+                <option value="apellido">Apellido</option>
+                <option value="email">Email</option>
+                <option value="edad">Edad</option>
+                <option value="dni">DNI</option>
+                <option value="genero">Genero</option>
+            </select> <input type="submit" value="Buscar" id="btnSubmit"/>
+        </div>
+    }
+</p>
+<table class="table table-hover">
+    <tr>
+        <th>
+            @Html.DisplayName("Nombre")
+        </th>
+        <th>
+            @Html.DisplayName("Apellido")
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.email)
+        </th>
+        <th>
+            @Html.DisplayName("Edad")
+        </th>
+        <th>
+            @Html.DisplayName("DOC")
+        </th>
+        <th>
+            @Html.DisplayName("Genero")
+        </th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.username)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.lastname)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.email)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.age)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.nro_doc)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.gender)
+            </td>
+            <td>
+                @Html.ActionLink("Editar", "Edit", new { id = item.id }, new { @class = "btn btn-primary" }) |
+                @Html.ActionLink("Detalles", "Details", new { id = item.id }, new { @class = "btn btn-info" }) |
+                @Html.ActionLink("Borrar", "Delete", new { id = item.id }, new { @class = "btn btn-danger" })
+            </td>
+        </tr>
+    }
+
+</table>
+<p>
+    @using (Html.BeginForm("DeleteAll", "Personas")) {
+        <button name="X-HTTP-Method-Override" value="DELETE" formnovalidate="" class="cancel btn btn-danger" onclick="return confirm('Are you sure?')">BORRAR DATOS</button>
+    }
+    @ViewData["Message"]
+</p>
