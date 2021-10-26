@@ -9,6 +9,8 @@
 //------------------------------------------------------------------------------
 
 
+using System.ComponentModel.DataAnnotations;
+
 namespace RegistroPersonas
 {
 
@@ -17,19 +19,31 @@ using System;
     
 public partial class Persona
 {
-
+    [Required(ErrorMessage = "El nombre es obligatorio")]
+    [StringLength(100, ErrorMessage = "El nombre no puede superar los 100 caracteres")]
     public string username { get; set; }
 
+    [Required(ErrorMessage = "El nombre es obligatorio")]
+    [StringLength(100, ErrorMessage = "El nombre no puede superar los 100 caracteres")]
     public string lastname { get; set; }
 
+
+    [Required(ErrorMessage = "El nombre es obligatorio")]
+    [StringLength(100, ErrorMessage = "El nombre no puede superar los 100 caracteres")] 
     public string email { get; set; }
 
+    [Required(ErrorMessage = "La edad es obligatoria")]
+    [Range(1, 140, ErrorMessage = "Ingrese una edad real")]
     public int age { get; set; }
 
+    [Required(ErrorMessage = "Debe seleccionar uno")]
     public int id_tipo_doc { get; set; }
 
+    [Required(ErrorMessage = "El numero de documento es obligatorio")]
+    [Range(1_000_000, 99_999_999, ErrorMessage = "Ingrese un numero valido")]
     public int nro_doc { get; set; }
 
+    [Required(ErrorMessage = "Elija una de las opciones")]
     public string gender { get; set; }
 
     public int id { get; set; }
@@ -38,6 +52,11 @@ public partial class Persona
 
     public virtual TipoDocumento TipoDocumento { get; set; }
 
+
+    public override string ToString()
+    {
+        return $"nombre: {username}, apellido: {lastname}, email: {email}, edad:{age}, Tipo_doc: {TipoDocumento.nombre}, nro_doc: {nro_doc}, genero: {gender}".ToLower();
+    }
 }
 
 }

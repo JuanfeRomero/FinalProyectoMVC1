@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
+using System.Net.Mime;
 using System.Web;
 using System.Web.Mvc;
 using RegistroPersonas;
@@ -25,14 +26,14 @@ namespace RegistroPersonas.Controllers
         {
             var result = db.Personas.AsEnumerable().Where(r =>
             {
-                string registro = r.ToString().Substring(r.ToString().LastIndexOf(category)+category.Length);
+                string registro = r.ToString().Substring(r.ToString().IndexOf(category) + category.Length);
                 registro = category == "genero" ? registro : registro.Substring(0, registro.IndexOf(","));
                 return registro.Contains(search.ToLower());
             });
 
             return View(result.ToList());
         }
-        
+
 
         public ActionResult Details(int? id)
         {
@@ -51,6 +52,16 @@ namespace RegistroPersonas.Controllers
         // GET: Personas/Create
         public ActionResult Create()
         {
+            List<SelectListItem> tipos = new List<SelectListItem>();
+            db.TiposDocumento.ToList().ForEach(t => tipos.Add(new SelectListItem { Text = $"{t.nombre}", Value = $"{t.id_tipo_doc}" }));
+            ViewData["tipos"] = tipos;
+            int nuevoId = 0;
+            do
+            {
+                nuevoId = new Random().Next();
+            } while (db.Personas.Find(nuevoId) != null);
+
+            ViewData["randomId"] = nuevoId;
             return View();
         }
 
@@ -59,9 +70,11 @@ namespace RegistroPersonas.Controllers
         // más detalles, vea https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "username,lastname,email,age,id_tipo_doc,nro_doc,gender,id")] Persona personas)
+        public ActionResult Create([Bind(Include = "age, email, gender, id, id_tipo_doc, lastname, nro_doc, username")] Persona personas)
         {
-            if (db.Personas.Find(personas.id) != null)
+            personas.TipoDocumento = db.TiposDocumento.Find(personas.id_tipo_doc);
+
+            if (db.Personas.Count(p => p.nro_doc == personas.nro_doc) > 0)
             {
                 ModelState.Clear();
                 ViewData["Message"] =
@@ -91,6 +104,10 @@ namespace RegistroPersonas.Controllers
             {
                 return HttpNotFound();
             }
+
+            List<SelectListItem> tipos = new List<SelectListItem>();
+            db.TiposDocumento.ToList().ForEach(t => tipos.Add(new SelectListItem { Text = $"{t.nombre}", Value = $"{t.id_tipo_doc}" }));
+            ViewData["tipos"] = tipos;
             return View(persona);
         }
 
@@ -99,26 +116,15 @@ namespace RegistroPersonas.Controllers
         // más detalles, vea https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "username,lastname,email,age, id_tipo_doc, nro_doc,gender, id")] Persona persona, int id)
+        public ActionResult Edit([Bind(Include = "username,lastname,email,age, id_tipo_doc, nro_doc,gender, id")] Persona persona)
         {
             if (ModelState.IsValid)
             {
-                if (db.Personas.Find(id) != null)
-                {
-                    Persona registroABorrar = db.Personas.Find(id);
-                    db.Personas.Remove(registroABorrar);
-                    db.SaveChanges();
-                    db.Personas.Add(persona);
-                    db.SaveChanges();
-                    return RedirectToAction("Index");
-                }
-                else
-                {
-                    db.Entry(persona).State = EntityState.Modified;
-                    db.SaveChanges();
-                    return RedirectToAction("Index");
 
-                }
+                db.Entry(persona).State = EntityState.Modified;
+                db.SaveChanges();
+                return RedirectToAction("Index");
+
             }
             return View(persona);
         }
@@ -152,7 +158,7 @@ namespace RegistroPersonas.Controllers
         [HttpDelete]
         public ActionResult DeleteAll()
         {
-            db.Database.ExecuteSqlCommand("TRUNCATE TABLE RegistroUsuariosCodes");
+            db.Database.ExecuteSqlCommand("TRUNCATE TABLE Persona");
             db.SaveChanges();
             ViewData["Message"] =
                 $"<p class=\"alert alert-warning text-center\" role=\"alert\">Elementos Borrados exitosamente!</p>";
